@@ -63,7 +63,7 @@ The selected LiteChat model IDs are documented as image-capable through provider
 
 Use one LiteChat adapter that maps the selected target provider to its documented path, headers, request serializer, and response parser. Keep these mappings separate from the model catalogue and keep the mock adapter as the fallback for tests and demos.
 
-Store credentials in a Django setting whose name includes `KEY` or `API`, not `CREDENTIALS`. Django's debug error reporter filters setting names containing terms such as `KEY`; a generic `CREDENTIALS` setting may appear in debug error output. Do not include key values in application messages or logs.
+Store credentials in a Django setting whose name includes `KEY` or `API`, not `CREDENTIALS`. Django's debug error reporter filters setting names containing terms such as `KEY`; a generic `CREDENTIALS` setting may appear in debug error output. The current app setting is `LITECHAT_CREDENTIALS`, so rename it before storing or using the provided values. Do not include key values in application messages or logs.
 
 Use the existing local environment variable names:
 
