@@ -1,6 +1,6 @@
 # LightChat MVP Implementation Plan
 
-- **Status:** Mock-backed MVP implemented and verified on `feat/lightchat-mvp`. Rendezvous is pending. Live-provider invocation remains blocked pending a verifiable proxy contract.
+- **Status:** Mock-backed MVP implemented and committed as `2496c3c` on `feat/lightchat-mvp`. Rendezvous is pending. Live-provider invocation remains blocked pending a verifiable proxy contract.
 - **Created:** 2026-09-29 05:19:57 UTC
 - **Study basis:** `doc/study/1790658141_llm-aggregator-feasibility.md`
 - **Suggested plan commit:** `docs: plan LightChat MVP implementation`
@@ -191,7 +191,7 @@ Do not create a payment entity, payment endpoint, or payment/refund workflow for
 - [x] Confirm mock image prompts use deterministic behavior and unsupported image/model combinations fail before provider invocation.
 - [x] Check ownership boundaries, environment-only credentials, safe text rendering, local media access/deletion, upload limits, and absence of payment processing/live-price logic.
 - [x] Review intended changes. Suggested implementation commit: `feat: build LightChat metered multi-provider MVP`.
-- [ ] Commit the implementation branch with the scoped Conventional Commit.
+- [x] Commit the implementation branch as `2496c3c feat: build LightChat metered multi-provider MVP`.
 - [ ] Merge the implementation branch into `main` and rerun checks after the merge.
 - [ ] Update this checklist as rendezvous tasks complete. Do not sync wiki docs during execution or rendezvous.
 

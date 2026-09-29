@@ -28,6 +28,6 @@ Branch: `feat/lightchat-mvp`
 ## Verification and Handoff
 
 - [x] Run Django checks, migrations, tests, and the mock-backed classroom flow test.
-- [ ] Review the diff and commit the implementation as a Conventional Commit.
+- [x] Review the diff and commit the implementation as a Conventional Commit (`2496c3c`).
 - [ ] Merge the implementation branch into `main` and rerun checks after the merge.
 - [ ] Do not sync living documentation during execution or rendezvous.
