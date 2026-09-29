@@ -1,0 +1,28 @@
+{% extends "lightchat/base.html" %}
+{% block title %}Your conversations · LightChat{% endblock %}
+{% block content %}
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="wordmark" href="{% url 'chat-home' %}"><span class="brand-mark">L</span> LightChat</a>
+        <form method="post" action="{% url 'create-chat' %}">{% csrf_token %}<button class="button button-new" type="submit"><span>＋</span> New conversation</button></form>
+        <div class="sidebar-label">YOUR SPACE</div>
+        <a class="side-link" href="{% url 'settings' %}"><span class="side-icon">◷</span> Settings & memory</a>
+        <div class="sidebar-bottom">
+            <a class="credit-panel" href="{% url 'settings' %}"><span class="credit-panel-top">TEST CREDITS <span class="sparkle">✳</span></span><strong data-credit-balance>{{ balance }}</strong><span class="credit-panel-foot">Available to explore</span></a>
+            <div class="user-strip"><span class="avatar">{{ request.user.lightchat_profile.display_name|first|upper }}</span><span class="user-strip-name">{{ request.user.lightchat_profile.display_name }}<small>@{{ request.user.username }}</small></span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" aria-label="Log out" title="Log out">↗</button></form></div>
+        </div>
+    </aside>
+    <main class="empty-main">
+        <div class="empty-orbit"><span class="orbit-dot"></span><span class="orbit-ring"></span><span class="orbit-core">L</span></div>
+        <p class="eyebrow">A little room to think</p>
+        <h1>Where should we<br>begin today?</h1>
+        <p class="empty-copy">Start a conversation, choose a model perspective, and keep your work together.</p>
+        <form method="post" action="{% url 'create-chat' %}" class="empty-start-form">
+            {% csrf_token %}
+            <input type="text" name="title" maxlength="120" placeholder="Name your first conversation (optional)">
+            <button class="button button-dark" type="submit">Start chatting <span>→</span></button>
+        </form>
+        <div class="mock-notice"><span class="mock-pulse"></span> Demo mode <span>Responses are clearly labelled mock output.</span></div>
+    </main>
+</div>
+{% endblock %}

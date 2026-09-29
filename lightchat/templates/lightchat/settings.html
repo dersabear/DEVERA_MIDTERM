@@ -1,0 +1,54 @@
+{% extends "lightchat/base.html" %}
+{% block title %}Settings · LightChat{% endblock %}
+{% block content %}
+<div class="settings-layout">
+    <aside class="settings-rail">
+        <a class="wordmark" href="{% url 'chat-home' %}"><span class="brand-mark">L</span> LightChat</a>
+        <a class="back-link" href="{% url 'chat-home' %}"><span>←</span> Back to conversations</a>
+        <div class="settings-rail-note"><span class="sparkle">✳</span><p>Make the assistant<br>feel more like yours.</p></div>
+        <div class="user-strip settings-user"><span class="avatar">{{ request.user.lightchat_profile.display_name|first|upper }}</span><span class="user-strip-name">{{ request.user.lightchat_profile.display_name }}<small>@{{ request.user.username }}</small></span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" aria-label="Log out" title="Log out">↗</button></form></div>
+    </aside>
+    <main class="settings-main">
+        <header class="settings-heading"><div><p class="eyebrow">YOUR LIGHTCHAT</p><h1>Settings</h1><p class="muted">Your profile, preferences, and classroom usage.</p></div><a class="credit-chip large-credit" href="#usage"><span>✳</span> <strong data-credit-balance>{{ balance }}</strong> credits remaining</a></header>
+
+        <section class="settings-section profile-section">
+            <div class="section-heading"><span class="section-number">01</span><div><h2>Your profile</h2><p>Personal details for this classroom account.</p></div></div>
+            <div class="profile-card">
+                <div class="profile-id"><span class="avatar avatar-large">{{ request.user.lightchat_profile.display_name|first|upper }}</span><div><strong>{{ request.user.lightchat_profile.display_name }}</strong><small>Member since {{ request.user.lightchat_profile.membership_date|date:"F j, Y" }}</small></div></div>
+                <dl class="profile-facts"><div><dt>USER ID</dt><dd>{{ request.user.lightchat_profile.public_id }}</dd></div><div><dt>USERNAME</dt><dd>@{{ request.user.username }}</dd></div><div><dt>MEMBERSHIP</dt><dd>{{ request.user.lightchat_profile.membership_date|date:"M j, Y" }}</dd></div></dl>
+                <details class="edit-profile"><summary>Edit profile</summary><form method="post" action="{% url 'update-profile' %}" class="settings-form">{% csrf_token %}<div class="field-grid"><div><label for="id_username">Username</label>{{ profile_form.username }}{{ profile_form.username.errors }}</div><div><label for="id_display_name">Display name</label>{{ profile_form.display_name }}{{ profile_form.display_name.errors }}</div></div><button class="button button-dark" type="submit">Save profile</button></form></details>
+            </div>
+        </section>
+
+        <section class="settings-section prompt-section">
+            <div class="section-heading"><span class="section-number">02</span><div><h2>Global System Prompt</h2><p>These instructions apply across your conversations.</p></div></div>
+            <form method="post" action="{% url 'global-prompt' %}" class="settings-card settings-form">{% csrf_token %}<label for="id_global_system_prompt">Your assistant preferences</label><p class="field-help">For example: "Use concise explanations and define technical terms." Maximum 4,000 characters.</p>{{ prompt_form.global_system_prompt }}{{ prompt_form.global_system_prompt.errors }}<div class="form-footer"><span class="subtle-note">Included with each new response.</span><button class="button button-dark" type="submit">Save prompt</button></div></form>
+        </section>
+
+        <section class="settings-section memory-section">
+            <div class="section-heading"><span class="section-number">03</span><div><h2>Memory items</h2><p>Small details LightChat can reuse in future conversations.</p></div></div>
+            <div class="memory-stack">
+                {% for memory in memories %}
+                <div class="memory-card {% if not memory.enabled %}memory-disabled{% endif %}">
+                    <form method="post" action="{% url 'edit-memory' memory.id %}" class="memory-edit-form">{% csrf_token %}<input type="text" name="content" maxlength="500" value="{{ memory.content }}" aria-label="Memory item"><label class="toggle-label"><input type="checkbox" name="enabled" {% if memory.enabled %}checked{% endif %}><span>Enabled</span></label><button class="button button-plain" type="submit">Save</button></form>
+                    <div class="memory-actions"><small>Updated {{ memory.updated_at|date:"M j" }}</small><form method="post" action="{% url 'toggle-memory' memory.id %}">{% csrf_token %}<button class="text-button" type="submit">{% if memory.enabled %}Disable{% else %}Enable{% endif %}</button></form><form method="post" action="{% url 'delete-memory' memory.id %}" data-confirm="Delete this memory item?">{% csrf_token %}<button class="text-button danger-text" type="submit">Delete</button></form></div>
+                </div>
+                {% empty %}<div class="memory-empty"><span>✳</span><p>No memory items yet.</p><small>Add a preference or personal detail you want to reuse.</small></div>{% endfor %}
+            </div>
+            <form method="post" action="{% url 'save-memory' %}" class="add-memory-form">{% csrf_token %}<label for="memory-content">Add a memory</label><div class="add-memory-row"><input id="memory-content" type="text" name="content" maxlength="500" placeholder="I prefer examples that use Python..." required><label class="toggle-label"><input type="checkbox" name="enabled" checked><span>Enabled</span></label><button class="button button-dark" type="submit">Add item <span>＋</span></button></div></form>
+        </section>
+
+        <section class="settings-section usage-section" id="usage">
+            <div class="section-heading"><span class="section-number">04</span><div><h2>Test credits & usage</h2><p>Classroom credits are simulated and have no cash value.</p></div></div>
+            <div class="usage-summary"><div><span>AVAILABLE</span><strong data-credit-balance>{{ balance }}</strong><small>test credits</small></div><div><span>MODEL COSTS</span><strong>1 · 3 · 5</strong><small>credits per response</small></div><div><span>PAYMENTS</span><strong>Off</strong><small>No payment processing</small></div></div>
+            <div class="ledger-card"><div class="ledger-heading"><h3>Recent activity</h3><span>{{ ledger|length }} entries</span></div>
+                {% if ledger %}<div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>ACTIVITY</th><th>DATE</th><th>CHANGE</th><th>BALANCE</th></tr></thead><tbody>
+                {% for entry in ledger %}<tr><td><span class="ledger-dot {% if entry.amount < 0 %}spent{% endif %}"></span>{{ entry.description }}</td><td>{{ entry.created_at|date:"M j, Y · g:i A" }}</td><td class="{% if entry.amount < 0 %}amount-negative{% else %}amount-positive{% endif %}">{% if entry.amount > 0 %}+{% endif %}{{ entry.amount }}</td><td>{{ entry.balance_after }}</td></tr>{% endfor %}
+                </tbody></table></div>{% else %}<p class="empty-ledger">Your test-credit activity will appear here.</p>{% endif %}
+            </div>
+            <p class="config-note">Model costs are fictional values in <code>lightchat/catalog.py</code>. They are not based on live provider prices.</p>
+        </section>
+        <footer class="settings-footer">LightChat classroom demo <span>·</span> Mock responses are not real provider outputs.</footer>
+    </main>
+</div>
+{% endblock %}

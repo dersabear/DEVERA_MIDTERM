@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f4ef">
+    <title>{% block title %}LightChat{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'lightchat/app.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% if request.user.is_authenticated %}
+    <header class="mobile-header">
+        <a class="wordmark" href="{% url 'chat-home' %}"><span class="brand-mark">L</span> LightChat</a>
+        <div class="mobile-header-actions">
+            <a class="credit-chip" href="{% url 'settings' %}"><span data-credit-balance>{{ request.user.lightchat_balance.available_credits }}</span> credits</a>
+            <details class="mobile-menu">
+                <summary aria-label="Open navigation">•••</summary>
+                <div class="mobile-menu-panel">
+                    <a href="{% url 'chat-home' %}">Conversations</a>
+                    <a href="{% url 'settings' %}">Settings & memory</a>
+                    <form method="post" action="{% url 'create-chat' %}">{% csrf_token %}<button type="submit">New conversation</button></form>
+                    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
+                </div>
+            </details>
+        </div>
+    </header>
+    {% endif %}
+    {% if messages %}
+    <div class="toast-stack" aria-live="polite">
+        {% for message in messages %}<div class="toast {{ message.tags }}">{{ message }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+    <script src="{% static 'lightchat/app.js' %}" defer></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

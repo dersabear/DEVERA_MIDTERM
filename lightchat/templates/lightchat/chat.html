@@ -1,0 +1,98 @@
+{% extends "lightchat/base.html" %}
+{% block title %}{{ chat.title }} · LightChat{% endblock %}
+{% block content %}
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="wordmark" href="{% url 'chat-home' %}"><span class="brand-mark">L</span> LightChat</a>
+        <form method="post" action="{% url 'create-chat' %}">{% csrf_token %}<button class="button button-new" type="submit"><span>＋</span> New conversation</button></form>
+        <div class="sidebar-label">RECENT CONVERSATIONS</div>
+        <nav class="conversation-nav" aria-label="Conversations">
+            {% for item in chats %}
+            <a class="conversation-link {% if item.id == chat.id %}active{% endif %}" href="{% url 'chat-detail' item.id %}" title="{{ item.title }}"><span class="conversation-mark">◌</span><span>{{ item.title|default:"New conversation" }}</span></a>
+            {% empty %}<span class="sidebar-empty">No conversations yet</span>{% endfor %}
+        </nav>
+        <div class="sidebar-bottom">
+            <a class="credit-panel" href="{% url 'settings' %}"><span class="credit-panel-top">TEST CREDITS <span class="sparkle">✳</span></span><strong data-credit-balance>{{ balance }}</strong><span class="credit-panel-foot">Available to explore</span></a>
+            <a class="side-link settings-link" href="{% url 'settings' %}"><span class="side-icon">⚙</span> Settings & memory</a>
+            <div class="user-strip"><span class="avatar">{{ request.user.lightchat_profile.display_name|first|upper }}</span><span class="user-strip-name">{{ request.user.lightchat_profile.display_name }}<small>@{{ request.user.username }}</small></span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" aria-label="Log out" title="Log out">↗</button></form></div>
+        </div>
+    </aside>
+    <main class="chat-main" data-chat-id="{{ chat.id }}" data-generate-url="{% url 'generate' chat.id %}" data-user-initial="{{ request.user.lightchat_profile.display_name|first|upper }}">
+        <header class="chat-topbar">
+            <div class="chat-title-area">
+                <span class="eyebrow">CONVERSATION</span>
+                <h1>{{ chat.title }}</h1>
+            </div>
+            <div class="chat-tools">
+                <div class="model-picker-wrap">
+                    <label for="model-picker">MODEL</label>
+                    <select id="model-picker" aria-label="Choose a mock provider model">
+                        {% for option in model_options %}
+                        <option value="{{ option.key }}" data-cost="{{ option.request_cost_credits }}" data-images="{{ option.supports_images|yesno:'true,false' }}">{{ option.name }} · {{ option.request_cost_credits }} cr</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <span class="mock-mode-pill"><span class="mock-pulse"></span> MOCK</span>
+                <details class="chat-menu">
+                    <summary aria-label="Conversation actions">•••</summary>
+                    <div class="chat-menu-popover">
+                        <form method="post" action="{% url 'rename-chat' chat.id %}">{% csrf_token %}<label for="rename-title">Rename conversation</label><input id="rename-title" name="title" maxlength="120" value="{{ chat.title }}"><button class="menu-action" type="submit">Save name</button></form>
+                        <form method="post" action="{% url 'archive-chat' chat.id %}">{% csrf_token %}<button class="menu-action" type="submit">Archive conversation</button></form>
+                        <form method="post" action="{% url 'delete-chat' chat.id %}" data-confirm="Delete this conversation and its uploaded files?">{% csrf_token %}<button class="menu-action danger-text" type="submit">Delete conversation</button></form>
+                    </div>
+                </details>
+            </div>
+        </header>
+        <div class="chat-scroller" id="chat-scroller">
+            <section class="message-list" id="message-list" aria-live="polite">
+                {% for message in messages_list %}
+                <article class="message-row {{ message.role }}" data-message-id="{{ message.id }}">
+                    <div class="message-avatar {% if message.role == 'assistant' %}assistant-avatar{% endif %}">{% if message.role == "assistant" %}L{% else %}{{ request.user.lightchat_profile.display_name|first|upper }}{% endif %}</div>
+                    <div class="message-body">
+                        <div class="message-meta"><strong>{% if message.role == "assistant" %}LightChat{% else %}{{ request.user.lightchat_profile.display_name }}{% endif %}</strong>{% if message.role == "assistant" %}<span class="mock-tag">MOCK</span><span>{{ message.provider|title }} target</span>{% endif %}<time>{{ message.created_at|date:"g:i A" }}</time></div>
+                        <div class="message-content">{{ message.content }}</div>
+                        {% if message.attachments.all %}<div class="attachment-list">{% for attachment in message.attachments.all %}<a class="attachment-chip" href="{% url 'download-attachment' attachment.id %}"><span>↧</span>{{ attachment.original_name }}</a>{% endfor %}</div>{% endif %}
+                        {% if message.role == "assistant" %}
+                        <div class="feedback-row">
+                            <form method="post" action="{% url 'submit-feedback' message.id %}">{% csrf_token %}<input type="hidden" name="rating" value="up"><button class="feedback-button" type="submit" aria-label="Helpful">↑ Helpful</button></form>
+                            <form method="post" action="{% url 'submit-feedback' message.id %}">{% csrf_token %}<input type="hidden" name="rating" value="down"><button class="feedback-button" type="submit" aria-label="Not helpful">↓ Not helpful</button></form>
+                            {% if message.feedback %}<span class="feedback-saved">Feedback saved</span>{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
+                <div class="conversation-intro">
+                    <div class="intro-mark">L</div>
+                    <p class="eyebrow">A fresh page</p>
+                    <h2>What are you<br>working through?</h2>
+                    <p>Ask for an explanation, shape a piece of writing, or upload a document to explore.</p>
+                    <div class="suggestion-row"><button type="button" class="suggestion" data-prompt="Help me break a complex task into clear steps.">Break it down <span>↗</span></button><button type="button" class="suggestion" data-prompt="Review this idea and suggest a stronger version.">Improve an idea <span>↗</span></button></div>
+                </div>
+                {% endfor %}
+            </section>
+        </div>
+        <div class="composer-zone">
+            <details class="instructions-details">
+                <summary><span>✳</span> Chat instructions <small>Optional, for this conversation</small></summary>
+                <form method="post" action="{% url 'chat-instructions' chat.id %}" class="instructions-form">{% csrf_token %}{{ instructions_form.system_instructions }}<button class="button button-soft" type="submit">Save instructions</button></form>
+            </details>
+            <form id="prompt-form" class="prompt-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <textarea id="prompt-input" name="prompt" rows="2" maxlength="12000" placeholder="Message LightChat..." aria-label="Your message"></textarea>
+                <div class="composer-bottom">
+                    <div class="composer-left">
+                        <label class="attach-button" for="file-input"><span>＋</span> Add files</label>
+                        <input id="file-input" type="file" name="files" accept=".pdf,.txt,.png,.jpg,.jpeg,application/pdf,text/plain,image/png,image/jpeg" multiple hidden>
+                        <span class="file-caption">PDF, TXT, PNG, JPEG</span>
+                        <span id="selected-files" class="selected-files"></span>
+                    </div>
+                    <div class="composer-right"><span class="cost-hint" id="cost-hint">1 credit per response</span><button class="send-button" id="send-button" type="submit" aria-label="Send message"><span>↑</span></button></div>
+                </div>
+            </form>
+            <div id="composer-error" class="composer-error" role="status"></div>
+            <p class="composer-disclaimer">Mock mode · responses are deterministic and do not come from the real provider.</p>
+        </div>
+    </main>
+</div>
+{% endblock %}

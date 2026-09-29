@@ -1,0 +1,33 @@
+{% extends "lightchat/base.html" %}
+{% block title %}Log in · LightChat{% endblock %}
+{% block content %}
+<main class="auth-layout">
+    <section class="auth-story">
+        <a class="wordmark wordmark-light" href="{% url 'login' %}"><span class="brand-mark">L</span> LightChat</a>
+        <div class="auth-story-copy">
+            <p class="eyebrow">A calmer way to think with AI</p>
+            <h1>One space.<br>Many points of view.</h1>
+            <p>Explore different model voices, keep your work in one place, and see what each conversation costs.</p>
+        </div>
+        <div class="story-caption">CLASSROOM EDITION <span>01 / 03</span></div>
+    </section>
+    <section class="auth-form-panel">
+        <div class="auth-card">
+            <p class="eyebrow">Welcome back</p>
+            <h2>Sign in to continue</h2>
+            <p class="muted">Your conversations and test credits are waiting.</p>
+            <form method="post" class="stack-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <label for="id_username">Username</label>
+                {{ form.username }}{{ form.username.errors }}
+                <label for="id_password">Password</label>
+                {{ form.password }}{{ form.password.errors }}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <button class="button button-dark button-wide" type="submit">Log in <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="auth-switch">New to LightChat? <a href="{% url 'signup' %}">Create an account</a></p>
+        </div>
+    </section>
+</main>
+{% endblock %}
