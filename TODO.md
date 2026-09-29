@@ -59,3 +59,16 @@ Branch: `fix/forwarded-static-assets`
 - [x] Commit the fix as `7fcf13f`.
 - [x] Fast-forward merge to `main` and rerun the checks.
 - [x] Sync static asset and footgun documentation after rendezvous.
+
+## LiteChat Provider Integration
+
+Plan: `doc/plan/1790671297_litechat-real-provider.md`
+Branch: `feat/litechat-real-providers`
+
+- [x] Read the documented LiteChat contract and record the request/response mappings.
+- [x] Preserve existing uncommitted edits in `settings.py`, `login.html`, and `base.html`.
+- [x] Create a separate implementation branch from `main`.
+- [ ] Add real OpenAI, Anthropic, and Google adapters while keeping mock mode.
+- [ ] Preserve simulated credits, chat history, instructions, memory, feedback, and file prompting.
+- [ ] Run mock tests and attempt one live provider request per provider without printing credentials or response content.
+- [ ] Commit only provider changes, rendezvous to `main`, verify, then sync docs separately.

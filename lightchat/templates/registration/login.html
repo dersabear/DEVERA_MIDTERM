@@ -16,7 +16,7 @@
             <p class="eyebrow">Welcome back</p>
             <h2>Sign in to continue</h2>
             <p class="muted">Your conversations and test credits are waiting.</p>
-            <form method="post" class="stack-form">
+            <form method="post" action="{% url 'login' %}" class="stack-form">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
                 <label for="id_username">Username</label>

@@ -1,6 +1,6 @@
 # LiteChat Real Provider Integration Plan
 
-- **Status:** Ready for execution. No provider-integration code has been changed.
+- **Status:** Real-provider integration and verification are complete on `feat/litechat-real-providers`; commit and rendezvous are pending.
 - **Created:** 2026-09-29 (Unix timestamp `1790671297`)
 - **Study:** `doc/study/1790670223_litechat-real-provider-contract.md`
 - **Scope:** Replace LightChat's real-provider 503 response with documented LiteChat proxy calls for OpenAI, Anthropic, and Google.
@@ -33,42 +33,43 @@ Use non-streaming JSON requests. The proxy does not run application tools. Do no
 
 ### Phase 0: Prepare
 
-- [ ] Confirm `main` and the worktree state. Preserve the three existing uncommitted user changes listed above.
-- [ ] Create a separate implementation branch from `main` before provider code changes.
-- [ ] Re-read the LiteChat and image request contracts in the study. Do not add any undocumented header, route, model ID, or request option.
-- [ ] Check credential availability only as booleans. Do not display values.
+- [x] Confirm `main` and the worktree state. Preserve the three existing uncommitted user changes listed above.
+- [x] Create the separate implementation branch `feat/litechat-real-providers` from `main` before provider code changes.
+- [x] Re-read the LiteChat and image request contracts in the study. Do not add any undocumented header, route, model ID, or request option.
+- [x] Check credential availability only as booleans. Do not display values; all three provider variables are present.
 
 ### Phase 1: Provider configuration and adapter
 
-- [ ] Replace the 503-only non-mock path with a provider interface that dispatches to the deterministic mock or the LiteChat adapter.
-- [ ] Add real catalogue IDs from the LiteChat docs: `gpt-5.6-luna`, `claude-haiku-4-5-20251001`, and `gemini-3.8-flash`. Keep the existing internal provider/model selection separate from endpoint and credentials.
-- [ ] Retain configurable fictional per-request credit costs. Do not use provider token usage or live pricing for deductions.
-- [ ] Implement the OpenAI Chat Completions request and response adapter with its documented endpoint and Bearer header.
-- [ ] Implement the Anthropic Messages request and response adapter with its documented endpoint, `x-api-key`, and version header.
-- [ ] Implement the Gemini Generate Content request and response adapter with its documented endpoint and `x-goog-api-key`.
-- [ ] Use bounded timeouts and JSON response parsing. Map transport, auth, rate-limit, invalid-request, upstream, and malformed-response errors to safe user messages.
-- [ ] Do not log request headers, credentials, raw error bodies, or user prompt contents.
-- [ ] Keep the mock provider unchanged and available with no credential requirement.
+- [x] Replace the 503-only non-mock path with a provider interface that dispatches to the deterministic mock or the LiteChat adapter.
+- [x] Add real catalogue IDs from the LiteChat docs: `gpt-5.6-luna`, `claude-haiku-4-5-20251001`, and `gemini-3.8-flash`. Keep the existing internal provider/model selection separate from endpoint and credentials.
+- [x] Retain configurable fictional per-request credit costs. Do not use provider token usage or live pricing for deductions.
+- [x] Implement the OpenAI Chat Completions request and response adapter with its documented endpoint and Bearer header.
+- [x] Implement the Anthropic Messages request and response adapter with its documented endpoint, `x-api-key`, and version header.
+- [x] Implement the Gemini Generate Content request and response adapter with its documented endpoint and `x-goog-api-key`.
+- [x] Use bounded timeouts and JSON response parsing. Map transport, auth, rate-limit, invalid-request, upstream, and malformed-response errors to safe user messages.
+- [x] Do not log request headers, credentials, raw error bodies, or user prompt contents.
+- [x] Keep the mock provider unchanged and available with no credential requirement.
 
 ### Phase 2: Conversation, files, and simulated credits
 
-- [ ] Route real calls through the selected provider while preserving chat ownership checks, request IDs, context construction, message persistence, and response provider/model labels.
-- [ ] Keep system instructions provider-specific: OpenAI `system` message, Anthropic `system` field, and Gemini `systemInstruction`.
-- [ ] Continue to extract PDF/TXT content locally and include the extracted text in the prompt context.
-- [ ] Serialize validated PNG/JPEG attachments using documented provider formats: OpenAI Chat Completions `image_url` data URL, Anthropic Base64 image blocks, and Gemini `inlineData` with `mimeType` and Base64 `data`.
-- [ ] Keep image capability flags in the model catalogue. Reject unsupported combinations before credit reservation or provider invocation.
-- [ ] Reserve/deduct the configured flat test-credit cost before a request, write the ledger record transactionally, and release the test credits on provider failure.
-- [ ] Preserve existing mock-only model options and clearly show whether a response used `mock` or the LiteChat proxy.
-- [ ] Keep retries idempotent. Do not automatically repeat a real-provider request with uncertain outcome.
+- [x] Route real calls through the selected provider while preserving chat ownership checks, request IDs, context construction, message persistence, and response provider/model labels.
+- [x] Keep system instructions provider-specific: OpenAI `system` message, Anthropic `system` field, and Gemini `systemInstruction`.
+- [x] Continue to extract PDF/TXT content locally and include the extracted text in the prompt context.
+- [x] Serialize validated PNG/JPEG attachments using documented provider formats: OpenAI Chat Completions `image_url` data URL, Anthropic Base64 image blocks, and Gemini `inlineData` with `mimeType` and Base64 `data`.
+- [x] Keep image capability flags in the model catalogue. Reject unsupported combinations before credit reservation or provider invocation.
+- [x] Reserve/deduct the configured flat test-credit cost before a request, write the ledger record transactionally, and release the test credits on provider failure.
+- [x] Preserve existing mock-only model options and clearly show whether a response used `mock` or the LiteChat proxy.
+- [x] Keep retries idempotent. Do not automatically repeat a real-provider request with uncertain outcome.
 
 ### Phase 3: Tests and real-provider smoke checks
 
-- [ ] Add unit tests for endpoint paths, headers, request JSON, response parsing, model selection, image payload encoding, and safe error mapping. Use synthetic test credentials only in mocked tests.
-- [ ] Verify mock mode still works without provider credentials and all prior account/chat/credit/file tests pass.
-- [ ] Verify real mode returns a safe error before credit deduction when the selected provider credential is missing.
-- [ ] Verify provider failures release simulated test credits and never expose provider response bodies or credential values.
-- [ ] Check the real credential environment variables without printing values. If credentials are available, send one minimal real text request through the LightChat proxy to each provider. Report only provider name, success/failure, and HTTP status.
-- [ ] Do not perform automatic retries during live smoke checks. Do not include secrets, response text, or request headers in command output.
+- [x] Add unit tests for endpoint paths, headers, request JSON, response parsing, model selection, image payload encoding, and safe error mapping. Use synthetic test credentials only in mocked tests.
+- [x] Verify mock mode still works without provider credentials and all prior account/chat/credit/file tests pass.
+- [x] Verify real mode returns a safe error before credit deduction when the selected provider credential is missing.
+- [x] Verify provider failures release simulated test credits and never expose provider response bodies or credential values.
+- [x] Check the real credential environment variables without printing values. All three are present.
+- [x] Send one minimal real text request through LiteChat to each provider. All three requests returned HTTP 200; output contained only provider names and status.
+- [x] Do not perform automatic retries during live smoke checks. Do not include secrets, response text, or request headers in command output.
 
 ### Phase 4: Commit and rendezvous
 

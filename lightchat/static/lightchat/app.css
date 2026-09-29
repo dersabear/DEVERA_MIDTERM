@@ -42,7 +42,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .button-plain { min-height: 34px; padding: 0 10px; color: var(--green); background: transparent; }
 .button-wide { width: 100%; margin-top: 12px; min-height: 48px; }
 .muted { color: var(--muted); }
-.eyebrow, .sidebar-label, .credit-panel-top, .model-picker-wrap label, .section-number, .profile-facts dt, .usage-summary div > span, .ledger-table th { color: var(--muted); font: 500 10px/1.4 var(--mono); letter-spacing: .13em; }
+.eyebrow, .sidebar-label, .credit-panel-top, .model-picker-wrap label, .thinking-picker-wrap label, .section-number, .profile-facts dt, .usage-summary div > span, .ledger-table th { color: var(--muted); font: 500 10px/1.4 var(--mono); letter-spacing: .13em; }
 .eyebrow { margin: 0 0 8px; }
 
 /* Authentication */
@@ -109,7 +109,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .model-picker-wrap { display: grid; gap: 1px; }
 .model-picker-wrap label { font-size: 8px; }
 .model-picker-wrap select { max-width: 280px; height: 33px; padding: 0 26px 0 9px; color: var(--ink); background: transparent; border: 1px solid #e4e2db; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.thinking-picker-wrap { display: grid; gap: 1px; min-width: 104px; }
+.thinking-picker-wrap label { font-size: 8px; }
+.thinking-picker-wrap select { height: 33px; padding: 0 24px 0 9px; color: var(--ink); background: transparent; border: 1px solid #e4e2db; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.thinking-effort-status { overflow: hidden; max-width: 150px; color: var(--muted); font: 8px/1.2 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .mock-mode-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; color: #456653; background: #edf5ee; border: 1px solid #dceadd; border-radius: 99px; font: 9px var(--mono); letter-spacing: .08em; }
+.live-mode-pill { color: #3e597a; background: #edf2fa; border-color: #d8e2f0; }
 .mock-pulse { width: 6px; height: 6px; background: #45a576; border-radius: 50%; box-shadow: 0 0 0 3px #45a57620; }
 .chat-menu { position: relative; }
 .chat-menu summary { display: grid; place-items: center; width: 32px; height: 32px; color: #68716c; border-radius: 6px; cursor: pointer; list-style: none; }
@@ -296,6 +301,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     .settings-rail { padding-inline: 14px; }
     .chat-tools { gap: 7px; }
     .model-picker-wrap select { max-width: 220px; }
+    .thinking-picker-wrap { min-width: 96px; }
     .profile-facts { grid-template-columns: 1.3fr 1fr; }
     .profile-facts div:last-child { grid-column: 1 / -1; }
 }
@@ -312,6 +318,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     .chat-tools { width: 100%; justify-content: space-between; }
     .model-picker-wrap { flex: 1; }
     .model-picker-wrap select { width: 100%; max-width: none; }
+    .thinking-picker-wrap { flex: 0 0 104px; }
+    .thinking-effort-status { max-width: 104px; }
     .chat-menu { flex: 0 0 auto; }
     .chat-scroller { min-height: 250px; }
     .message-list { padding: 23px 15px 25px; }

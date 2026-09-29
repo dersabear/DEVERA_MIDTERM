@@ -16,7 +16,7 @@
             <p class="eyebrow">Get started</p>
             <h2>Create your space</h2>
             <p class="muted">A username is all you need for this classroom demo.</p>
-            <form method="post" class="stack-form">
+            <form method="post" action="{% url 'signup' %}" class="stack-form">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
                 <label for="id_display_name">Display name</label>

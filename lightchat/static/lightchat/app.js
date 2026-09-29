@@ -13,7 +13,10 @@
     const scroller = document.getElementById("chat-scroller");
     const error = document.getElementById("composer-error");
     const picker = document.getElementById("model-picker");
+    const effortPicker = document.getElementById("thinking-effort");
+    const effortStatus = document.getElementById("thinking-effort-status");
     const costHint = document.getElementById("cost-hint");
+    const executionLabel = chatMain.dataset.providerMode === "litechat" ? "LITECHAT" : "MOCK";
     let retryRequestId = null;
     let retrySignature = null;
 
@@ -28,7 +31,25 @@
         const option = picker.selectedOptions[0];
         const cost = Number(option.dataset.cost || 0);
         costHint.textContent = `${cost} ${cost === 1 ? "credit" : "credits"} per response`;
+        updateThinkingEffortState();
     });
+
+    effortPicker.addEventListener("change", updateThinkingEffortState);
+    updateThinkingEffortState();
+
+    function updateThinkingEffortState() {
+        const supported = chatMain.dataset.providerMode === "litechat"
+            && picker.selectedOptions[0].dataset.thinkingEffort === "true";
+        effortPicker.disabled = !supported;
+        if (!supported) {
+            effortStatus.textContent = chatMain.dataset.providerMode === "litechat"
+                ? "Thinking effort: Not supported"
+                : "Thinking effort: Mock mode";
+            return;
+        }
+        const effort = effortPicker.value;
+        effortStatus.textContent = `Thinking effort: ${effort[0].toUpperCase()}${effort.slice(1)}`;
+    }
 
     files.addEventListener("change", () => {
         const target = document.getElementById("selected-files");
@@ -54,6 +75,7 @@
         const signature = JSON.stringify([
             text,
             picker.value,
+            effortPicker.value,
             Array.from(files.files).map((file) => [file.name, file.size, file.lastModified]),
         ]);
         if (!retryRequestId || retrySignature !== signature) {
@@ -63,6 +85,7 @@
         const data = new FormData(form);
         data.set("request_id", retryRequestId);
         data.set("model_key", picker.value);
+        data.set("thinking_effort", effortPicker.value || "medium");
         appendUserMessage(text, Array.from(files.files).map((file) => file.name));
         appendPendingMessage();
         scrollToBottom();
@@ -135,7 +158,7 @@
         const row = document.createElement("article");
         row.id = "pending-message";
         row.className = "message-row assistant pending-row";
-        row.innerHTML = '<div class="message-avatar assistant-avatar">L</div><div class="message-body"><div class="message-meta"><strong>LightChat</strong><span class="mock-tag">MOCK</span></div><div class="typing-dots"><i></i><i></i><i></i><span>Thinking through your prompt</span></div></div>';
+        row.innerHTML = `<div class="message-avatar assistant-avatar">L</div><div class="message-body"><div class="message-meta"><strong>LightChat</strong><span class="mock-tag">${executionLabel}</span></div><div class="typing-dots"><i></i><i></i><i></i><span>Thinking through your prompt</span></div></div>`;
         list.append(row);
     }
 
@@ -158,7 +181,7 @@
         name.textContent = "LightChat";
         const tag = document.createElement("span");
         tag.className = "mock-tag";
-        tag.textContent = "MOCK";
+        tag.textContent = (message.execution_mode || "mock").toUpperCase();
         const provider = document.createElement("span");
         provider.textContent = `${message.provider} target`;
         meta.append(name, tag, provider);

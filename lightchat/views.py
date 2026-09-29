@@ -1,3 +1,4 @@
+import base64
 import uuid
 
 from django.conf import settings
@@ -12,7 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .catalog import MODEL_OPTIONS, get_model_option
+from .catalog import THINKING_EFFORTS, get_model_option, get_model_options
 from .forms import (
     ChatInstructionsForm,
     ChatRenameForm,
@@ -33,7 +34,7 @@ from .models import (
     Message,
     UserSettings,
 )
-from .providers import get_provider
+from .providers import ProviderError, get_provider
 from .services import (
     UploadValidationError,
     build_context,
@@ -91,7 +92,8 @@ def chat_detail(request, chat_id):
             "chat": chat,
             "chats": chats,
             "messages_list": chat.messages.prefetch_related("attachments", "feedback").all(),
-            "model_options": MODEL_OPTIONS,
+            "model_options": get_model_options(settings.LIGHTCHAT_PROVIDER_MODE),
+            "provider_mode": settings.LIGHTCHAT_PROVIDER_MODE,
             "balance": request.user.lightchat_balance.available_credits,
             "instructions_form": ChatInstructionsForm(instance=chat),
         },
@@ -121,34 +123,69 @@ def generation_json(generation):
     }
 
 
-def complete_mock_generation(generation, option, *, replayed):
+def complete_generation(generation, option, *, replayed, thinking_effort="medium"):
     user = generation.user
     chat = generation.session
     user_message = generation.user_message
-    prepared_attachments = [
-        {
-            "name": attachment.original_name,
-            "is_image": attachment.is_image,
-            "extracted_text": attachment.extracted_text,
-        }
-        for attachment in user_message.attachments.all()
-    ]
-    context = build_context(user, chat, user_message, prepared_attachments)
-    provider = get_provider("mock")
     try:
+        prepared_attachments = []
+        for attachment in user_message.attachments.all():
+            item = {
+                "name": attachment.original_name,
+                "is_image": attachment.is_image,
+                "content_type": attachment.content_type,
+                "extracted_text": attachment.extracted_text,
+            }
+            if generation.execution_mode == Message.ExecutionMode.LITECHAT and attachment.is_image:
+                try:
+                    with attachment.file.open("rb") as image_file:
+                        image_bytes = image_file.read(settings.LIGHTCHAT_MAX_UPLOAD_BYTES + 1)
+                except OSError:
+                    raise ProviderError("An attached image could not be read.", status=400, code="image_read_error") from None
+                if len(image_bytes) > settings.LIGHTCHAT_MAX_UPLOAD_BYTES:
+                    raise ProviderError("An attached image exceeds the configured upload limit.", status=400, code="image_too_large")
+                item["image_data"] = base64.b64encode(image_bytes).decode("ascii")
+            prepared_attachments.append(item)
+
+        context = build_context(user, chat, user_message, prepared_attachments)
+        provider = get_provider(
+            generation.execution_mode,
+            proxy_url=settings.LITECHAT_PROXY_URL,
+            api_keys=settings.LITECHAT_API_KEYS,
+        )
         response_text = provider.generate(
             option=option,
             prompt=user_message.content,
             context=context,
             attachments=prepared_attachments,
+            thinking_effort=thinking_effort,
         )
-    except Exception:
-        released = release_failed_generation(generation, user)
+    except ProviderError as exc:
+        released = release_failed_generation(
+            generation,
+            user,
+            error_code=exc.code,
+            description="Test credits released after a failed provider request",
+        )
         generation.refresh_from_db()
         if not released and generation.status == GenerationRequest.Status.SUCCEEDED:
             return JsonResponse(generation_json(generation))
         return JsonResponse(
-            {"ok": False, "error": "The demo model failed. Your test credits were released."},
+            {"ok": False, "error": f"{exc}. Your test credits were released."},
+            status=exc.status,
+        )
+    except Exception:
+        released = release_failed_generation(
+            generation,
+            user,
+            error_code="provider_internal_error",
+            description="Test credits released after an internal provider error",
+        )
+        generation.refresh_from_db()
+        if not released and generation.status == GenerationRequest.Status.SUCCEEDED:
+            return JsonResponse(generation_json(generation))
+        return JsonResponse(
+            {"ok": False, "error": "The provider request failed. Your test credits were released."},
             status=502,
         )
 
@@ -165,7 +202,7 @@ def complete_mock_generation(generation, option, *, replayed):
             content=response_text,
             provider=option["provider"],
             model_key=option["key"],
-            execution_mode=Message.ExecutionMode.MOCK,
+            execution_mode=generation.execution_mode,
         )
         generation.assistant_message = assistant_message
         generation.status = GenerationRequest.Status.SUCCEEDED
@@ -192,13 +229,14 @@ def generate(request, chat_id):
     option = get_model_option(request.POST.get("model_key", ""))
     if option is None:
         return JsonResponse({"ok": False, "error": "Choose a supported model."}, status=400)
+    thinking_effort = request.POST.get("thinking_effort", "medium").strip().lower()
+    if thinking_effort not in THINKING_EFFORTS:
+        return JsonResponse({"ok": False, "error": "Choose a valid thinking effort."}, status=400)
 
-    if settings.LIGHTCHAT_PROVIDER_MODE != "mock":
+    provider_mode = settings.LIGHTCHAT_PROVIDER_MODE
+    if provider_mode not in {Message.ExecutionMode.MOCK, Message.ExecutionMode.LITECHAT}:
         return JsonResponse(
-            {
-                "ok": False,
-                "error": "Real-provider access is unavailable until the LiteChat proxy contract is verified. Use mock mode.",
-            },
+            {"ok": False, "error": "The configured provider mode is not supported."},
             status=503,
         )
 
@@ -212,10 +250,29 @@ def generate(request, chat_id):
         if prior.status == GenerationRequest.Status.SUCCEEDED:
             return JsonResponse(generation_json(prior))
         if prior.status == GenerationRequest.Status.PENDING:
-            option = get_model_option(prior.model_key)
-            if option:
-                return complete_mock_generation(prior, option, replayed=True)
+            if prior.execution_mode == Message.ExecutionMode.MOCK:
+                option = get_model_option(prior.model_key)
+                if option:
+                    return complete_generation(
+                        prior,
+                        option,
+                        replayed=True,
+                        thinking_effort=thinking_effort,
+                    )
+            return JsonResponse(
+                {"ok": False, "error": "A previous provider request may still be running; it was not retried."},
+                status=409,
+            )
         return JsonResponse({"ok": False, "error": "This request was already submitted."}, status=409)
+
+    if provider_mode == Message.ExecutionMode.LITECHAT:
+        if not option.get("upstream_model_id"):
+            return JsonResponse({"ok": False, "error": "This model is available only in mock mode."}, status=400)
+        if not settings.LITECHAT_API_KEYS.get(option["provider"]):
+            return JsonResponse(
+                {"ok": False, "error": "The server is missing a credential for this provider."},
+                status=503,
+            )
 
     try:
         prepared_attachments = prepare_attachments(request.FILES.getlist("files"))
@@ -255,7 +312,7 @@ def generate(request, chat_id):
                 idempotency_key=request_id,
                 provider=option["provider"],
                 model_key=option["key"],
-                execution_mode=Message.ExecutionMode.MOCK,
+                execution_mode=provider_mode,
                 cost_credits=cost,
             )
             balance = AccountBalance.objects.get(user=request.user)
@@ -265,18 +322,33 @@ def generate(request, chat_id):
                 entry_type=CreditLedgerEntry.EntryType.GENERATION_CHARGE,
                 amount=-cost,
                 balance_after=balance.available_credits,
-                description=f"{option['provider_label']} mock generation",
+                description=f"{option['provider_label']} {provider_mode} generation",
             )
     except IntegrityError:
         prior = GenerationRequest.objects.filter(user=request.user, idempotency_key=request_id).first()
         if prior and prior.status == GenerationRequest.Status.SUCCEEDED:
             return JsonResponse(generation_json(prior))
         if prior and prior.status == GenerationRequest.Status.PENDING:
-            option = get_model_option(prior.model_key)
-            if option:
-                return complete_mock_generation(prior, option, replayed=True)
+            if prior.execution_mode == Message.ExecutionMode.MOCK:
+                option = get_model_option(prior.model_key)
+                if option:
+                    return complete_generation(
+                        prior,
+                        option,
+                        replayed=True,
+                        thinking_effort=thinking_effort,
+                    )
+            return JsonResponse(
+                {"ok": False, "error": "A previous provider request may still be running; it was not retried."},
+                status=409,
+            )
         return JsonResponse({"ok": False, "error": "This request was already submitted."}, status=409)
-    return complete_mock_generation(generation, option, replayed=False)
+    return complete_generation(
+        generation,
+        option,
+        replayed=False,
+        thinking_effort=thinking_effort,
+    )
 
 
 @login_required

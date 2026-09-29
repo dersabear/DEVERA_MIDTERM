@@ -16,15 +16,17 @@ Open `http://127.0.0.1:8000/` and create an account. Each new account receives 1
 
 ## Local environment values
 
-The project reads local values from `.env` in the repository root. `.env` is ignored by Git. `.env.example` contains no provider credentials; secret variable placeholders are blank. Keep `LIGHTCHAT_PROVIDER_MODE=mock` while the LiteChat proxy contract is unavailable. The app does not make real provider calls in mock mode.
+The project reads local values from `.env` in the repository root. `.env` is ignored by Git. `.env.example` contains no provider credentials; secret variable placeholders are blank. `LIGHTCHAT_PROVIDER_MODE=mock` keeps deterministic responses. Set it to `litechat` to send real requests through the course proxy. Keep provider keys in the ignored `.env` file only.
 
 For local CodeRange development, `DJANGO_ALLOWED_HOSTS` includes `*` while `DJANGO_DEBUG=true`. This accepts rotating forwarded preview hostnames without a session-specific host entry. Do not use the wildcard when debug mode is off; settings reject that combination. Set an explicit host list for any non-local environment.
 
-LightChat's static links use the request's WSGI `SCRIPT_NAME` when mounted below a forwarded path. The project `runserver` command uses a staticfiles handler that serves from `PATH_INFO`, so both app assets work under CodeRange's changing preview path and at the local root. The forwarding server must supply `SCRIPT_NAME`; the app does not store a session URL or port.
+LightChat's `ForwardedPrefixMiddleware` applies the request's WSGI `SCRIPT_NAME` to Django URL generation. In debug mode, it uses `X-Forwarded-Prefix` when `SCRIPT_NAME` is empty. If the proxy supplies neither value, set `LIGHTCHAT_BASE_PATH` in `.env` (for example, `/proxy/8000`). It is blank by default, so local URLs stay at the root. Navigation, form actions, and static links use the prefix. In configured fallback mode, root-relative `Location` headers omit it because CodeRange adds the mount path to redirects. The project `runserver` staticfiles handler serves assets at the local root and under the forwarded path.
 
 Do not place secret values in source files, templates, browser storage, logs, README files, chat messages, or commits. Do not paste them into issue reports or assistant conversations.
 
-The proxy URL, authentication scheme, request/response format, model IDs, and image protocol are not available in the project materials. The corresponding variables are reserved for a later verified integration. Adding values to `.env` does not enable live calls.
+The LiteChat proxy root defaults to `https://proxy.litechat.ai`. The app sends OpenAI, Anthropic, and Google requests to their documented provider routes. It reads provider keys from `LITECHAT_OPENAI_CREDENTIAL`, `LITECHAT_ANTHROPIC_CREDENTIAL`, and `LITECHAT_GOOGLE_CREDENTIAL`. These setting values are server-side only and must not be added to source control.
+
+The chat provides Low, Medium, and High thinking effort per request. OpenAI uses `reasoning_effort`; Gemini 3.8 Flash uses `thinkingConfig.thinkingLevel`. The current LiteChat route rejects enabled thinking for Claude Haiku 4.5, so its effort selector is disabled and the existing disabled-thinking payload remains. Mock-only options also disable effort. The selection remains in the current chat UI state and is not stored in the database.
 
 ## Test
 

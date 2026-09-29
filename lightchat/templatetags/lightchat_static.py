@@ -3,6 +3,8 @@ from urllib.parse import urlsplit
 from django import template
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+from lightchat.middleware import resolve_script_name
+
 
 register = template.Library()
 
@@ -15,7 +17,7 @@ def lightchat_static(context, path):
         return url
 
     request = context.get("request")
-    script_name = request.META.get("SCRIPT_NAME", "").rstrip("/") if request else ""
+    script_name = resolve_script_name(request.META) if request else ""
     if not script_name or url.startswith(f"{script_name}/"):
         return url
     return f"{script_name}/{url.lstrip('/')}"

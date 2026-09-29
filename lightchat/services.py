@@ -168,12 +168,12 @@ def build_context(user, session, current_message, current_attachments):
     return "\n\n".join(parts)
 
 
-def release_failed_generation(generation, user):
+def release_failed_generation(generation, user, *, error_code="provider_error", description="Test credits released after a failed generation"):
     with transaction.atomic():
         updated = type(generation).objects.filter(
             pk=generation.pk,
             status=GenerationRequest.Status.PENDING,
-        ).update(status=GenerationRequest.Status.FAILED, error_code="mock_provider_error")
+        ).update(status=GenerationRequest.Status.FAILED, error_code=error_code)
         if not updated:
             return False
         AccountBalance.objects.filter(user=user).update(
@@ -186,6 +186,6 @@ def release_failed_generation(generation, user):
             entry_type=CreditLedgerEntry.EntryType.FAILED_RELEASE,
             amount=generation.cost_credits,
             balance_after=balance.available_credits,
-            description="Test credits released after a failed generation",
+            description=description,
         )
         return True

@@ -23,6 +23,14 @@ def parse_allowed_hosts(value, *, debug):
 
 
 ALLOWED_HOSTS = parse_allowed_hosts(os.getenv("DJANGO_ALLOWED_HOSTS"), debug=DEBUG)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "https://*.coderange.net"
+    ).split(",")
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -35,6 +43,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "lightchat.middleware.ForwardedPrefixMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -86,6 +95,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+LIGHTCHAT_BASE_PATH = os.getenv("LIGHTCHAT_BASE_PATH", "").strip().rstrip("/")
+SESSION_COOKIE_PATH = LIGHTCHAT_BASE_PATH or "/"
+CSRF_COOKIE_PATH = SESSION_COOKIE_PATH
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("LIGHTCHAT_MEDIA_ROOT", str(BASE_DIR / "media")))
 
@@ -96,8 +108,8 @@ LOGOUT_REDIRECT_URL = "login"
 
 LIGHTCHAT_PROVIDER_MODE = os.getenv("LIGHTCHAT_PROVIDER_MODE", "mock").strip().lower()
 LIGHTCHAT_MAX_UPLOAD_BYTES = max(1024, int(os.getenv("LIGHTCHAT_MAX_UPLOAD_BYTES", "10485760")))
-LITECHAT_PROXY_URL = os.getenv("LITECHAT_PROXY_URL", "")
-LITECHAT_CREDENTIALS = {
+LITECHAT_PROXY_URL = os.getenv("LITECHAT_PROXY_URL") or "https://proxy.litechat.ai"
+LITECHAT_API_KEYS = {
     "openai": os.getenv("LITECHAT_OPENAI_CREDENTIAL", ""),
     "anthropic": os.getenv("LITECHAT_ANTHROPIC_CREDENTIAL", ""),
     "google": os.getenv("LITECHAT_GOOGLE_CREDENTIAL", ""),
