@@ -43,4 +43,5 @@ Branch: `fix/code-range-allowed-hosts`
 - [x] Add debug-only wildcard host support through `DJANGO_ALLOWED_HOSTS`.
 - [x] Test a dynamically named forwarded host and reject wildcards outside debug mode.
 - [x] Run Django checks and all tests (30 tests pass).
-- [ ] Commit, rendezvous to `main`, verify after merge, and sync living docs separately.
+- [x] Commit the fix as `1cd75f1`.
+- [ ] Rendezvous to `main`, verify after merge, and sync living docs separately.

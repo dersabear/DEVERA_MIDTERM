@@ -1,6 +1,6 @@
 # CodeRange Host Configuration Plan
 
-- **Status:** Local host configuration and verification are complete on `fix/code-range-allowed-hosts`; commit and rendezvous are pending.
+- **Status:** Local host configuration and verification are complete. Commit `1cd75f1` is on `fix/code-range-allowed-hosts`; rendezvous is pending.
 - **Created:** 2026-09-29 06:51:34 UTC
 - **Study:** `doc/study/1790664555_code-range-allowed-hosts.md`
 - **Scope:** Fix the local CodeRange `DisallowedHost` error without adding a session-specific hostname.
@@ -44,7 +44,7 @@ Allow the Django classroom app to accept CodeRange's dynamically forwarded host 
 
 ### Phase 3: Commit and rendezvous
 
-- [ ] Review the diff and commit the change as `fix: allow CodeRange hosts in local development`.
+- [x] Review the diff and commit the change as `1cd75f1 fix: allow CodeRange hosts in local development`.
 - [ ] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
 - [ ] Update the task board with the merge and verification result.
 
