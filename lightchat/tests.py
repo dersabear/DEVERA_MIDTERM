@@ -4,9 +4,10 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 from pypdf import PdfWriter
@@ -25,8 +26,29 @@ from .models import (
     UserSettings,
 )
 from .services import provision_account
+from lightchat_site.settings import parse_allowed_hosts
 
 User = get_user_model()
+
+
+class CodeRangeAllowedHostsTests(SimpleTestCase):
+    def test_dynamic_forwarded_host_is_accepted_in_local_debug_mode(self):
+        self.assertIn("*", settings.ALLOWED_HOSTS)
+        forwarded_host = f"session-{uuid4().hex}.preview.coderange.test"
+        response = Client().get("/", HTTP_HOST=forwarded_host)
+        self.assertEqual(response.status_code, 302)
+
+    def test_wildcard_is_rejected_outside_debug_mode(self):
+        from django.core.exceptions import ImproperlyConfigured
+
+        with self.assertRaises(ImproperlyConfigured):
+            parse_allowed_hosts("127.0.0.1,localhost,*", debug=False)
+
+    def test_explicit_hosts_are_retained(self):
+        self.assertEqual(
+            parse_allowed_hosts("localhost, example.test", debug=False),
+            ["localhost", "example.test"],
+        )
 
 
 class LightChatTestCase(TestCase):

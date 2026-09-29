@@ -16,7 +16,9 @@ Open `http://127.0.0.1:8000/` and create an account. Each new account receives 1
 
 ## Local environment values
 
-The project reads local values from `.env` in the repository root. `.env` is ignored by Git. `.env.example` contains variable names with blank values only. Keep `LIGHTCHAT_PROVIDER_MODE=mock` while the LiteChat proxy contract is unavailable. The app does not make real provider calls in mock mode.
+The project reads local values from `.env` in the repository root. `.env` is ignored by Git. `.env.example` contains no provider credentials; secret variable placeholders are blank. Keep `LIGHTCHAT_PROVIDER_MODE=mock` while the LiteChat proxy contract is unavailable. The app does not make real provider calls in mock mode.
+
+For local CodeRange development, `DJANGO_ALLOWED_HOSTS` includes `*` while `DJANGO_DEBUG=true`. This accepts rotating forwarded preview hostnames without a session-specific host entry. Do not use the wildcard when debug mode is off; settings reject that combination. Set an explicit host list for any non-local environment.
 
 Do not place secret values in source files, templates, browser storage, logs, README files, chat messages, or commits. Do not paste them into issue reports or assistant conversations.
 

@@ -1,6 +1,6 @@
 # CodeRange Host Configuration Plan
 
-- **Status:** Ready for execution. No application changes have been made.
+- **Status:** Local host configuration and verification are complete on `fix/code-range-allowed-hosts`; commit and rendezvous are pending.
 - **Created:** 2026-09-29 06:51:34 UTC
 - **Study:** `doc/study/1790664555_code-range-allowed-hosts.md`
 - **Scope:** Fix the local CodeRange `DisallowedHost` error without adding a session-specific hostname.
@@ -19,21 +19,28 @@ Allow the Django classroom app to accept CodeRange's dynamically forwarded host 
 
 ## Implementation Task Board
 
+### Phase 0: Prepare
+
+- [x] Confirm `main` is clean and create `fix/code-range-allowed-hosts` from `main`.
+- [x] Confirm there is no local `.env` file. Do not inspect or change provider credentials.
+
 ### Phase 1: Configure local host validation
 
-- [ ] Add a small parser for `DJANGO_ALLOWED_HOSTS` in `lightchat_site/settings.py`.
-- [ ] When the variable is absent, use `127.0.0.1,localhost,*` only when debug mode is on. Keep the fallback strict when debug mode is off.
-- [ ] Reject `*` when `DJANGO_DEBUG=false` with a clear configuration error.
-- [ ] Update `.env.example` to include `*` with the localhost names. Do not add any forwarded or session-specific host.
-- [ ] Update the local setup documentation. State that wildcard hosts are only for CodeRange/local debug use.
+- [x] Add a small parser for `DJANGO_ALLOWED_HOSTS` in `lightchat_site/settings.py`.
+- [x] When the variable is absent, use `127.0.0.1,localhost,*` only when debug mode is on. Keep the fallback strict when debug mode is off.
+- [x] Reject `*` when `DJANGO_DEBUG=false` with a clear configuration error.
+- [x] Update `.env.example` to include `*` with the localhost names. Do not add any forwarded or session-specific host.
+- [x] Update the local setup documentation. State that wildcard hosts are only for CodeRange/local debug use.
 
 ### Phase 2: Verify behavior
 
-- [ ] Add a Django test that sends a request with a dynamically generated CodeRange-style forwarded host and confirms it is not rejected as `DisallowedHost` under the local configuration.
-- [ ] Add a settings test that confirms wildcard configuration is rejected when debug mode is off.
-- [ ] Confirm explicit host entries still parse and work.
-- [ ] Run `.venv/bin/python manage.py check` and `.venv/bin/python manage.py test`.
-- [ ] Confirm no `.env` values were read, printed, or changed. Confirm `.env` remains ignored.
+- [x] Add a Django test that sends a request with a dynamically generated CodeRange-style forwarded host and confirms it is not rejected as `DisallowedHost` under the local configuration.
+- [x] Add a settings test that confirms wildcard configuration is rejected when debug mode is off.
+- [x] Confirm explicit host entries still parse and work.
+- [x] Run `.venv/bin/python manage.py check` and `.venv/bin/python manage.py test`.
+- [x] Confirm no `.env` values were read, printed, or changed. Confirm `.env` remains ignored.
+
+**Verification result:** The effective local settings include `*`. A Django test client request with a dynamically generated CodeRange-style host passes host validation. All 30 Django tests pass, and `.venv/bin/python manage.py check` reports no issues.
 
 ### Phase 3: Commit and rendezvous
 

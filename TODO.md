@@ -31,3 +31,16 @@ Branch: `feat/lightchat-mvp`
 - [x] Review the diff and commit the implementation as a Conventional Commit (`2496c3c`).
 - [x] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
 - Living documentation sync remains a separate stage and was not performed.
+
+## CodeRange Host Fix
+
+Plan: `doc/plan/1790664694_code-range-allowed-hosts.md`
+Branch: `fix/code-range-allowed-hosts`
+
+- [x] Study Django `ALLOWED_HOSTS` behavior and confirm the current fallback allows localhost only.
+- [x] Confirm no local `.env` file is present. Do not read or alter credential values.
+- [x] Create an implementation branch from `main`.
+- [x] Add debug-only wildcard host support through `DJANGO_ALLOWED_HOSTS`.
+- [x] Test a dynamically named forwarded host and reject wildcards outside debug mode.
+- [x] Run Django checks and all tests (30 tests pass).
+- [ ] Commit, rendezvous to `main`, verify after merge, and sync living docs separately.

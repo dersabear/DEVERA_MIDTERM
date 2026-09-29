@@ -2,6 +2,7 @@ import os
 import secrets
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 
@@ -10,7 +11,18 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or secrets.token_urlsafe(48)
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if host.strip()]
+
+
+def parse_allowed_hosts(value, *, debug):
+    if value is None or not value.strip():
+        value = "127.0.0.1,localhost,*" if debug else "127.0.0.1,localhost"
+    hosts = [host.strip() for host in value.split(",") if host.strip()]
+    if "*" in hosts and not debug:
+        raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS cannot contain '*' when DJANGO_DEBUG is false.")
+    return hosts
+
+
+ALLOWED_HOSTS = parse_allowed_hosts(os.getenv("DJANGO_ALLOWED_HOSTS"), debug=DEBUG)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
