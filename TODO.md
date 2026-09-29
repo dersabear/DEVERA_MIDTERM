@@ -44,4 +44,5 @@ Branch: `fix/code-range-allowed-hosts`
 - [x] Test a dynamically named forwarded host and reject wildcards outside debug mode.
 - [x] Run Django checks and all tests (30 tests pass).
 - [x] Commit the fix as `1cd75f1`.
-- [ ] Rendezvous to `main`, verify after merge, and sync living docs separately.
+- [x] Fast-forward merge to `main` and verify after merge.
+- [x] Sync living docs in `doc/wiki/` separately after rendezvous.

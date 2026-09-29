@@ -1,6 +1,6 @@
 # CodeRange Host Configuration Plan
 
-- **Status:** Local host configuration and verification are complete. Commit `1cd75f1` is on `fix/code-range-allowed-hosts`; rendezvous is pending.
+- **Status:** CodeRange local host fix is committed, merged to `main`, verified, and documented.
 - **Created:** 2026-09-29 06:51:34 UTC
 - **Study:** `doc/study/1790664555_code-range-allowed-hosts.md`
 - **Scope:** Fix the local CodeRange `DisallowedHost` error without adding a session-specific hostname.
@@ -45,14 +45,14 @@ Allow the Django classroom app to accept CodeRange's dynamically forwarded host 
 ### Phase 3: Commit and rendezvous
 
 - [x] Review the diff and commit the change as `1cd75f1 fix: allow CodeRange hosts in local development`.
-- [ ] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
-- [ ] Update the task board with the merge and verification result.
+- [x] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
+- [x] Update the task board with the merge and verification result.
 
 ### Phase 4: Sync living docs
 
-- [ ] Update or add a focused `doc/wiki/` page for local CodeRange host configuration.
-- [ ] Record the local-only wildcard behavior in `doc/wiki/footguns/` because `ALLOWED_HOSTS = ["*"]` accepts arbitrary Host headers and must not be used with debug mode off.
-- [ ] Keep the documentation scoped to behavior supported by the settings and tests. Do not change `doc/canonical/`.
+- [x] Add `doc/wiki/local-development.md` for CodeRange host configuration.
+- [x] Record the local-only wildcard behavior in `doc/wiki/footguns/code-range-host-allowlist.md` because `ALLOWED_HOSTS = ["*"]` accepts arbitrary Host headers and is rejected when debug mode is off.
+- [x] Keep the documentation scoped to behavior supported by the settings and tests. No `doc/canonical/` content was changed.
 
 ## Acceptance Criteria
 
@@ -60,5 +60,5 @@ Allow the Django classroom app to accept CodeRange's dynamically forwarded host 
 - The default local configuration and `.env.example` include `*` through `DJANGO_ALLOWED_HOSTS` and retain localhost entries.
 - A wildcard is rejected when debug mode is off.
 - No `.env` credential values or session-specific hostname are added to tracked files.
-- Django checks and tests pass before and after the merge to `main`.
+- Django checks and all 30 tests pass before and after the merge to `main`.
 - Living docs explain this behavior only after rendezvous.
