@@ -13,3 +13,5 @@ Run the local app with:
 ```sh
 .venv/bin/python manage.py runserver
 ```
+
+When CodeRange mounts the app below a forwarded path, Django must receive the WSGI `SCRIPT_NAME`. LightChat uses it to build static URLs for `app.css` and `app.js`. The project's `runserver` command also uses a static handler that serves mounted assets from `PATH_INFO`. This supports changing preview paths without a host or port in settings. See [Static Assets](static-assets.md) for the implementation details.

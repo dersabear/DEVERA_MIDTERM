@@ -1,6 +1,6 @@
 # Forwarded Static Assets Plan
 
-- **Status:** Implementation and tests are complete. Commit `7fcf13f` is on `fix/forwarded-static-assets`; rendezvous is pending.
+- **Status:** Forwarded static asset fix is committed, merged to `main`, verified, and documented.
 - **Created:** 2026-09-29 07:25:03 UTC
 - **Study:** `doc/study/1790666629_static-assets-forwarded-prefix.md`
 - **Scope:** Make LightChat CSS and JavaScript URLs work under the CodeRange forwarded path and at the normal local root.
@@ -49,14 +49,14 @@ Fix static asset requests that currently go to `/static/lightchat/...` instead o
 
 - [x] Review the diff. Suggested commit: `fix: serve static assets under CodeRange prefix`.
 - [x] Commit the change as `7fcf13f fix: serve static assets under CodeRange prefix`.
-- [ ] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
-- [ ] Update the task board with the merge and verification result.
+- [x] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
+- [x] Update the task board with the merge and verification result.
 
 ### Phase 4: Sync living docs
 
-- [ ] Update the local development page in `doc/wiki/` with the mount-aware static behavior.
-- [ ] Add a `doc/wiki/footguns/` note if static URLs depend on WSGI `SCRIPT_NAME` under a forwarded path.
-- [ ] Keep the documentation scoped to behavior verified by the code and tests. Do not change `doc/canonical/`.
+- [x] Update the local development page in `doc/wiki/` with the mount-aware static behavior.
+- [x] Add a `doc/wiki/footguns/forwarded-static-assets.md` note for the WSGI `SCRIPT_NAME` and static-handler behavior.
+- [x] Keep the documentation scoped to behavior verified by the code and tests. Do not change `doc/canonical/`.
 
 ## Acceptance Criteria
 

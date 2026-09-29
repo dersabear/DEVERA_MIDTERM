@@ -57,4 +57,5 @@ Branch: `fix/forwarded-static-assets`
 - [x] Add request-prefix-aware URLs for the CSS and JavaScript assets.
 - [x] Verify both assets through forwarded and local paths and verify login-page links.
 - [x] Commit the fix as `7fcf13f`.
-- [ ] Rendezvous to `main`, sync living docs separately, and verify final state.
+- [x] Fast-forward merge to `main` and rerun the checks.
+- [x] Sync static asset and footgun documentation after rendezvous.
