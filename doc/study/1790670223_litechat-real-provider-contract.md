@@ -55,13 +55,15 @@ Provider image formats differ:
 
 - **OpenAI Chat Completions:** Its API schema defines user message image parts as `{"type":"image_url","image_url":{"url":"data:<mime>;base64,<data>","detail":"auto"}}`. Use a Base64 data URL from the validated local PNG/JPEG attachment.
 - **Anthropic Messages:** Use an image content block with `source.type="base64"`, the validated image's `media_type`, and Base64 `data`. Place the system prompt in the separate `system` field.
-- **Google Gemini:** Use a content part with `inlineData.mimeType` and Base64 `inlineData.data`. The LiteChat example documents text parts. The Google REST schema documents `inlineData`; the LiteChat call should be verified with a real request before this image capability is presented as tested.
+- **Google Gemini:** Use a content part with `inlineData.mimeType` and Base64 `inlineData.data`. The Google REST schema documents these exact fields, the Gemini 3.8 Flash guide lists image input, and LiteChat states image input is available. Verify the serialized image request through LiteChat before marking it tested.
 
 The selected LiteChat model IDs are documented as image-capable through provider image interfaces. Keep the capability flag in the configurable model catalogue. If image serialization fails validation, do not call the provider. If a provider rejects its documented image part, release credits and show a safe error.
 
 ## Integration Design
 
 Use one LiteChat adapter that maps the selected target provider to its documented path, headers, request serializer, and response parser. Keep these mappings separate from the model catalogue and keep the mock adapter as the fallback for tests and demos.
+
+Store credentials in a Django setting whose name includes `KEY` or `API`, not `CREDENTIALS`. Django's debug error reporter filters setting names containing terms such as `KEY`; a generic `CREDENTIALS` setting may appear in debug error output. Do not include key values in application messages or logs.
 
 Use the existing local environment variable names:
 
