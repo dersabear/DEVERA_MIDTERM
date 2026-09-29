@@ -3,11 +3,15 @@ from io import BytesIO
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 from uuid import uuid4
+from wsgiref.util import setup_testing_defaults
 
 from django.conf import settings
+from django.core.handlers.wsgi import WSGIHandler
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import get_commands, load_command_class
 from django.test import Client, SimpleTestCase, TestCase, override_settings
+from django.test.utils import override_script_prefix
 from django.urls import reverse
 from PIL import Image
 from pypdf import PdfWriter
@@ -26,6 +30,7 @@ from .models import (
     UserSettings,
 )
 from .services import provision_account
+from .management.commands.runserver import ScriptNameAwareStaticFilesHandler
 from lightchat_site.settings import parse_allowed_hosts
 
 User = get_user_model()
@@ -49,6 +54,86 @@ class CodeRangeAllowedHostsTests(SimpleTestCase):
             parse_allowed_hosts("localhost, example.test", debug=False),
             ["localhost", "example.test"],
         )
+
+
+@override_settings(DEBUG=True, STATIC_URL="/static/")
+class ForwardedStaticAssetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="forwarded-user", password="ForwardedPass-7031")
+        provision_account(self.user, "Forwarded User")
+
+    def test_login_links_and_assets_include_dynamic_script_name(self):
+        prefix = f"/proxy/{20000 + int(uuid4().hex[:4], 16) % 40000}"
+        with override_script_prefix(prefix):
+            page = Client().get("/login/", SCRIPT_NAME=prefix)
+        self.assertEqual(page.status_code, 200)
+        html = page.content.decode()
+        self.assertIn(f'href="{prefix}/static/lightchat/app.css"', html)
+        self.assertIn(f'src="{prefix}/static/lightchat/app.js"', html)
+        self.assertIn(f'href="{prefix}/signup/"', html)
+        self.assertIn('id="id_username"', html)
+        self.assertIn('class="auth-layout"', html)
+        self.assertEqual(get_commands()["runserver"], "lightchat")
+        runserver = load_command_class("lightchat", "runserver")
+        self.assertIsInstance(
+            runserver.get_handler(use_static_handler=True, insecure_serving=False),
+            ScriptNameAwareStaticFilesHandler,
+        )
+
+        with override_script_prefix(prefix):
+            login_response = self.client.post(
+                "/login/",
+                {"username": "forwarded-user", "password": "ForwardedPass-7031"},
+                SCRIPT_NAME=prefix,
+            )
+            home_response = self.client.get("/", SCRIPT_NAME=prefix)
+        self.assertEqual(login_response.status_code, 302)
+        self.assertEqual(login_response["Location"], f"{prefix}/")
+        self.assertEqual(home_response.status_code, 200)
+
+        for name, content_type in [
+            ("app.css", "text/css"),
+            ("app.js", "text/javascript"),
+        ]:
+            status, headers, body = self.fetch_static(
+                f"/static/lightchat/{name}", script_name=prefix
+            )
+            self.assertEqual(status, "200 OK")
+            self.assertTrue(dict(headers)["Content-Type"].startswith(content_type))
+            self.assertTrue(body)
+
+    def test_assets_still_work_without_a_mount_prefix(self):
+        for name in ("app.css", "app.js"):
+            status, _headers, body = self.fetch_static(
+                f"/static/lightchat/{name}", script_name=""
+            )
+            self.assertEqual(status, "200 OK")
+            self.assertTrue(body)
+
+    @staticmethod
+    def fetch_static(path, *, script_name):
+        application = ScriptNameAwareStaticFilesHandler(WSGIHandler())
+        environ = {}
+        setup_testing_defaults(environ)
+        host = f"forwarded-{uuid4().hex}.test"
+        environ.update(
+            REQUEST_METHOD="GET",
+            SCRIPT_NAME=script_name,
+            PATH_INFO=path,
+            HTTP_HOST=host,
+            SERVER_NAME=host,
+            SERVER_PORT="80",
+            **{"wsgi.input": BytesIO()},
+        )
+        response = {}
+        with override_script_prefix("/"):
+            body = b"".join(
+                application(
+                    environ,
+                    lambda status, headers, exc_info=None: response.update(status=status, headers=headers),
+                )
+            )
+        return response["status"], response["headers"], body
 
 
 class LightChatTestCase(TestCase):

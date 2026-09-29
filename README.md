@@ -20,6 +20,8 @@ The project reads local values from `.env` in the repository root. `.env` is ign
 
 For local CodeRange development, `DJANGO_ALLOWED_HOSTS` includes `*` while `DJANGO_DEBUG=true`. This accepts rotating forwarded preview hostnames without a session-specific host entry. Do not use the wildcard when debug mode is off; settings reject that combination. Set an explicit host list for any non-local environment.
 
+Static asset links use Django's WSGI `SCRIPT_NAME` when the app is mounted below a forwarded path. CodeRange must provide that standard WSGI mount prefix; no session URL or port is stored in the app.
+
 Do not place secret values in source files, templates, browser storage, logs, README files, chat messages, or commits. Do not paste them into issue reports or assistant conversations.
 
 The proxy URL, authentication scheme, request/response format, model IDs, and image protocol are not available in the project materials. The corresponding variables are reserved for a later verified integration. Adding values to `.env` does not enable live calls.

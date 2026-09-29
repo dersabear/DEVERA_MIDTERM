@@ -1,4 +1,4 @@
-{% load static %}
+{% load lightchat_static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f6f4ef">
     <title>{% block title %}LightChat{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'lightchat/app.css' %}">
+    <link rel="stylesheet" href="{% lightchat_static 'lightchat/app.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -33,7 +33,7 @@
     </div>
     {% endif %}
     {% block content %}{% endblock %}
-    <script src="{% static 'lightchat/app.js' %}" defer></script>
+    <script src="{% lightchat_static 'lightchat/app.js' %}" defer></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

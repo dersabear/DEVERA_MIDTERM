@@ -30,8 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
     "lightchat.apps.LightchatConfig",
+    "django.contrib.staticfiles",
 ]
 
 MIDDLEWARE = [
@@ -84,7 +84,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("LIGHTCHAT_MEDIA_ROOT", str(BASE_DIR / "media")))

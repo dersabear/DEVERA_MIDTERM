@@ -46,3 +46,14 @@ Branch: `fix/code-range-allowed-hosts`
 - [x] Commit the fix as `1cd75f1`.
 - [x] Fast-forward merge to `main` and verify after merge.
 - [x] Sync living docs in `doc/wiki/` separately after rendezvous.
+
+## Forwarded Static Assets
+
+Plan: `doc/plan/1790666703_forwarded-static-assets.md`
+Branch: `fix/forwarded-static-assets`
+
+- [x] Confirm static URL output is root-prefixed and missing the forwarded script prefix.
+- [x] Create an implementation branch from `main`.
+- [x] Add request-prefix-aware URLs for the CSS and JavaScript assets.
+- [x] Verify both assets through forwarded and local paths and verify login-page links.
+- [ ] Commit, rendezvous to `main`, sync living docs separately, and verify final state.
