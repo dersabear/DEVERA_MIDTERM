@@ -29,5 +29,5 @@ Branch: `feat/lightchat-mvp`
 
 - [x] Run Django checks, migrations, tests, and the mock-backed classroom flow test.
 - [x] Review the diff and commit the implementation as a Conventional Commit (`2496c3c`).
-- [ ] Merge the implementation branch into `main` and rerun checks after the merge.
-- [ ] Do not sync living documentation during execution or rendezvous.
+- [x] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
+- Living documentation sync remains a separate stage and was not performed.

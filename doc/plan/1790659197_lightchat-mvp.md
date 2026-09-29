@@ -1,6 +1,6 @@
 # LightChat MVP Implementation Plan
 
-- **Status:** Mock-backed MVP implemented and committed as `2496c3c` on `feat/lightchat-mvp`. Rendezvous is pending. Live-provider invocation remains blocked pending a verifiable proxy contract.
+- **Status:** Mock-backed MVP merged to `main` and verified. Live-provider invocation remains blocked pending a verifiable proxy contract.
 - **Created:** 2026-09-29 05:19:57 UTC
 - **Study basis:** `doc/study/1790658141_llm-aggregator-feasibility.md`
 - **Suggested plan commit:** `docs: plan LightChat MVP implementation`
@@ -192,10 +192,11 @@ Do not create a payment entity, payment endpoint, or payment/refund workflow for
 - [x] Check ownership boundaries, environment-only credentials, safe text rendering, local media access/deletion, upload limits, and absence of payment processing/live-price logic.
 - [x] Review intended changes. Suggested implementation commit: `feat: build LightChat metered multi-provider MVP`.
 - [x] Commit the implementation branch as `2496c3c feat: build LightChat metered multi-provider MVP`.
-- [ ] Merge the implementation branch into `main` and rerun checks after the merge.
-- [ ] Update this checklist as rendezvous tasks complete. Do not sync wiki docs during execution or rendezvous.
+- [x] Fast-forward merge `feat/lightchat-mvp` into `main`.
+- [x] Rerun Django checks, migration checks, the full test suite, and JavaScript syntax validation after the merge.
+- [x] Update this checklist after rendezvous. Do not sync wiki docs during execution or rendezvous.
 
-**Rendezvous after execution:** Merge the implementation branch back to `main` unless a clear repository constraint prevents it. Run the appropriate test/build/smoke checks again after the merge. Report the merge and verification results.
+**Rendezvous result:** `feat/lightchat-mvp` was fast-forward merged into `main`. Django checks, migration checks, all tests, and JavaScript syntax checks passed after the merge.
 
 **Documentation sync is separate:** Do not update living docs during implementation or rendezvous. After the implementation is merged, perform `sync docs` as its own stage, update supported facts in `doc/wiki/`, and record noteworthy behavior in `doc/wiki/footguns/`. Treat `doc/canonical/` as authoritative.
 
@@ -218,7 +219,7 @@ Do not create a payment entity, payment endpoint, or payment/refund workflow for
 
 ## Execution Notes
 
-- Follow `AGENTS.md`: `main` is the primary branch. Execute this existing plan on a separate branch created from `main`, update this checklist as work progresses, and rendezvous by merging to `main` and verifying after merge.
+- Follow `AGENTS.md`: `main` is the primary branch. The implementation ran on `feat/lightchat-mvp`, then fast-forward merged to `main`. Post-merge checks passed.
 - Keep the implementation focused enough for one `feat:` Conventional Commit when possible. Do not commit unrelated work.
 - Use `TODO.md` as the editable general todo list during implementation if a general todo list is needed; this plan remains the feature-specific task board.
 - Do not perform documentation sync until explicitly requested after rendezvous.
