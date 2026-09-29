@@ -56,4 +56,5 @@ Branch: `fix/forwarded-static-assets`
 - [x] Create an implementation branch from `main`.
 - [x] Add request-prefix-aware URLs for the CSS and JavaScript assets.
 - [x] Verify both assets through forwarded and local paths and verify login-page links.
-- [ ] Commit, rendezvous to `main`, sync living docs separately, and verify final state.
+- [x] Commit the fix as `7fcf13f`.
+- [ ] Rendezvous to `main`, sync living docs separately, and verify final state.

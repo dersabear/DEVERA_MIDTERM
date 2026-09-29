@@ -1,6 +1,6 @@
 # Forwarded Static Assets Plan
 
-- **Status:** Implementation and tests are complete on `fix/forwarded-static-assets`; commit and rendezvous are pending.
+- **Status:** Implementation and tests are complete. Commit `7fcf13f` is on `fix/forwarded-static-assets`; rendezvous is pending.
 - **Created:** 2026-09-29 07:25:03 UTC
 - **Study:** `doc/study/1790666629_static-assets-forwarded-prefix.md`
 - **Scope:** Make LightChat CSS and JavaScript URLs work under the CodeRange forwarded path and at the normal local root.
@@ -48,7 +48,7 @@ Fix static asset requests that currently go to `/static/lightchat/...` instead o
 ### Phase 3: Commit and rendezvous
 
 - [x] Review the diff. Suggested commit: `fix: serve static assets under CodeRange prefix`.
-- [ ] Commit the change with the scoped Conventional Commit.
+- [x] Commit the change as `7fcf13f fix: serve static assets under CodeRange prefix`.
 - [ ] Fast-forward merge the implementation branch into `main` and rerun checks after the merge.
 - [ ] Update the task board with the merge and verification result.
 
